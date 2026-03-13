@@ -1,0 +1,64 @@
+# ─── Gradle 빌드 산출물 ───────────────────────────────
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# ─── IDE — IntelliJ ───────────────────────────────────
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+# ─── IDE — Eclipse / STS ──────────────────────────────
+.apt_generated/
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+# ─── IDE — VS Code ────────────────────────────────────
+.vscode/
+
+# ─── IDE — NetBeans ───────────────────────────────────
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# ─── 로그 ─────────────────────────────────────────────
+logs/
+*.log
+
+# ─── 테스트 산출물 ─────────────────────────────────────
+test-results/
+
+# ─── OS ───────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ─── 임시 파일 ────────────────────────────────────────
+*.tmp
+*.swp
+*.swo
+*~
+HELP.md
+
+# ─── 환경 변수 (절대 커밋 금지) ──────────────────────
+.env
+

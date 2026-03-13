@@ -1,0 +1,27 @@
+# [1단계] 빌드 (맥북 ARM 네이티브 성능 사용)
+# --platform=$BUILDPLATFORM 이걸 적어줘야 명령어가 뭐든 맥북 성능을 써!
+FROM --platform=$BUILDPLATFORM gradle:8.5-jdk17 AS builder
+WORKDIR /app
+COPY . .
+# 여기서 gRPC 빌드가 맥북 성능으로 광속 통과됨
+RUN ./gradlew clean build -x test
+
+# [2단계] jlink (K8s용 x86 JRE 생성)
+# 여기는 결과물이 x86용이어야 하니까 강제 고정
+FROM --platform=linux/amd64 eclipse-temurin:17-jdk-alpine AS jlinker
+RUN jlink \
+    --add-modules java.base,java.logging,java.naming,java.desktop,java.management,java.security.jgss,java.instrument,java.sql,jdk.unsupported \
+    --strip-debug \
+    --no-man-pages \
+    --no-header-files \
+    --compress=2 \
+    --output /javaruntime
+
+# [3단계] 최종 배포 (K8s용 x86 이미지)
+FROM --platform=linux/amd64 alpine:latest
+WORKDIR /app
+COPY --from=jlinker /javaruntime /opt/java
+ENV JAVA_HOME=/opt/java
+ENV PATH="$JAVA_HOME/bin:$PATH"
+COPY --from=builder /app/build/libs/*.jar app.jar
+ENTRYPOINT ["java", "-jar", "app.jar"]

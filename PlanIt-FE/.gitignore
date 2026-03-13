@@ -1,0 +1,53 @@
+# ─── 의존성 ───────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# ─── 빌드 산출물 ──────────────────────────────────────
+dist/
+build/
+.vite/
+*.tsbuildinfo
+
+# ─── 테스트 / 커버리지 ────────────────────────────────
+coverage/
+.nyc_output/
+
+# ─── IDE ──────────────────────────────────────────────
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ─── OS ───────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ─── 로그 ─────────────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ─── 캐시 ─────────────────────────────────────────────
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+
+# ─── 환경 변수 (절대 커밋 금지) ──────────────────────
+.env
+.env.local
+.env.*.local

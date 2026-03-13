@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  mariadb:
+    image: mariadb:11.2
+    container_name: planit-user-db
+    environment:
+      MARIADB_ROOT_PASSWORD: planit_root_password
+      MARIADB_DATABASE: planit_user_db
+      MARIADB_USER: planit_user
+      MARIADB_PASSWORD: planit_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - planit-network
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: planit-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - planit-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  user-service:
+    build:
+      context: .
+      dockerfile: dockerfile
+    container_name: planit-user-service
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/planit_user_db
+      SPRING_DATASOURCE_USERNAME: planit_user
+      SPRING_DATASOURCE_PASSWORD: planit_password
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
+      AWS_REGION: ${AWS_REGION:-ap-northeast-2}
+      AWS_COGNITO_USER_POOL_ID: ${AWS_COGNITO_USER_POOL_ID}
+      AWS_CREDENTIALS_ACCESS_KEY: ${AWS_CREDENTIALS_ACCESS_KEY}
+      AWS_CREDENTIALS_SECRET_KEY: ${AWS_CREDENTIALS_SECRET_KEY}
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - planit-network
+    restart: unless-stopped
+
+volumes:
+  mariadb_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  planit-network:
+    driver: bridge

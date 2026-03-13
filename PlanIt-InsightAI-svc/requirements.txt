@@ -1,0 +1,27 @@
+# Core Framework
+fastapi==0.115.0
+uvicorn==0.32.0
+pydantic==2.9.0
+pydantic-settings==2.5.2
+
+# AWS Bedrock Integration
+boto3==1.35.0
+botocore==1.35.0
+
+# Database (Async MariaDB for Bedrock Tool Use)
+aiomysql==0.2.0
+cryptography==43.0.0
+
+# Development & Testing
+pytest==8.3.0
+pytest-asyncio==0.24.0
+hypothesis==6.115.0
+python-dotenv==1.0.0
+
+# Utilities
+python-json-logger==2.0.7
+
+# gRPC (Java-Python Communication)
+grpcio==1.78.0
+grpcio-tools==1.78.0
+grpcio-reflection==1.78.0

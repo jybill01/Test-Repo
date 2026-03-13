@@ -1,0 +1,122 @@
+//모든 라이브러리와 플러그인은 여기서 관리합니다.
+
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.5.11'
+	id 'io.spring.dependency-management' version '1.1.7'
+	id 'com.google.protobuf' version '0.9.4'
+	id 'com.google.osdetector' version '1.7.3'
+}
+
+group = 'com.planit'
+version = '0.0.1-SNAPSHOT'
+description = 'Demo project for Spring Boot'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	compileOnly 'org.projectlombok:lombok'
+	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	//헬스체크 및 모니터링 (Actuator)
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    
+    //로깅 및 분산 추적 (Micrometer Tracing) - 로그에 [TraceID] 자동 부여
+    implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+    
+    // Spring Security (Phase 2 JWT 인증 대비)
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    testImplementation 'org.springframework.security:spring-security-test'
+    
+    // JWT 라이브러리 (Phase 2 JWT 인증)
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+
+	// gRPC 서버 및 클라이언트 자동 설정
+    implementation 'net.devh:grpc-spring-boot-starter:2.15.0.RELEASE'
+    // Protobuf 메시지 및 스텁(Stub) 처리
+    implementation 'io.grpc:grpc-stub:1.58.0'
+    implementation 'io.grpc:grpc-protobuf:1.58.0'
+    // Java 9 이상 호환성(javax.annotation 대체)
+    compileOnly 'org.apache.tomcat:annotations-api:6.0.53'
+
+    // [추가] grpcurl 통신을 위한 리플렉션 기능
+    implementation 'io.grpc:grpc-services:1.58.0'
+    
+    // AWS SDK for DynamoDB
+    implementation platform('software.amazon.awssdk:bom:2.20.0')
+    implementation 'software.amazon.awssdk:dynamodb'
+    
+    // ShedLock for distributed locking
+    implementation 'net.javacrumbs.shedlock:shedlock-spring:5.9.1'
+    implementation 'net.javacrumbs.shedlock:shedlock-provider-jdbc-template:5.9.1'
+    
+    // Swagger/OpenAPI (Spring Boot 3.5.x 호환)
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.4'
+    
+    // RestTemplate for Service B communication
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    
+    // Jackson JSR310 for LocalDateTime serialization
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    
+    // Bean Validation (Hibernate Validator)
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    
+    // Property-Based Testing (jqwik)
+    testImplementation 'net.javacrumbs.json-unit:json-unit-assertj:3.2.2'
+    // testImplementation 'net.javacrumbs.shedlock:shedlock-test-support:5.9.1' // 존재하지 않는 아티팩트
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs 'build/generated/source/proto/main/grpc'
+            srcDirs 'build/generated/source/proto/main/java'
+        }
+    }
+}
+
+//Protobuf 컴파일 태스크 추가
+// protobuf {
+//     protoc { artifact = "com.google.protobuf:protoc:3.24.0" }
+//     plugins { grpc { artifact = "io.grpc:protoc-gen-grpc-java:1.58.0" } }
+//     generateProtoTasks { all()*.plugins { grpc {} } }
+// }
+
+// Cross-Platform Protobuf 컴파일 설정 (OS 자동 감지)
+protobuf {
+    protoc { 
+        artifact = "com.google.protobuf:protoc:3.24.0:${osdetector.classifier}"
+    }
+    plugins { 
+        grpc { 
+            artifact = "io.grpc:protoc-gen-grpc-java:1.58.0:${osdetector.classifier}"
+        } 
+    }
+    generateProtoTasks { all()*.plugins { grpc {} } }
+}

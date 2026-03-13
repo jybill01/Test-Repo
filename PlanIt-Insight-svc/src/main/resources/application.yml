@@ -1,0 +1,114 @@
+#[planit 글로벌 룰 - 환경 설정]
+#포트, DB 등 환경 설정은 이 파일에서 관리됩니다.
+
+server:
+  port: ${SERVER_PORT:8084}
+
+spring:
+  application:
+    name: insight-core-service
+
+  config:
+    import: "optional:file:.env[.properties]"
+  
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: ${PLANIT_INSIGHT_DB_URL:${SPRING_DATASOURCE_URL:jdbc:mariadb://planit-mariadb:3306/planit_insight_db}}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:root}
+
+  jpa:
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+      ddl-auto: create
+    show-sql: ${SHOW_SQL:false}
+  
+  task:
+    execution:
+      pool:
+        core-size: 5
+        max-size: 10
+        queue-capacity: 100
+
+# Service B 연동 (InsightAI Python 서비스)
+service-b:
+  base-url: ${PLANIT_INSIGHT_AI_SERVICE_HTTP_URL:${SERVICE_B_BASE_URL:http://planit-insight-ai-svc:8085}}
+  timeout: ${SERVICE_B_TIMEOUT:10000}
+
+# gRPC 설정
+grpc:
+  # Insight Service 자신의 gRPC 서버 포트 (Schedule-svc에서 ActionLog 기록 시 호출)
+  server:
+    port: ${GRPC_SERVER_PORT:9094}
+  
+  # gRPC 클라이언트 설정 (InsightAI-svc Python 서버)
+  # 단일 포트(9095)에서 Chatbot + Report 서비스 모두 제공
+  client:
+    # Chatbot 서비스 (기존)
+    chat-service:
+      address: ${PLANIT_INSIGHT_AI_CHAT_GRPC_TARGET:${GRPC_CHAT_SERVICE_ADDRESS:static://planit-insight-ai-svc:9095}}
+      negotiationType: plaintext
+      enableKeepAlive: true
+      keepAliveTime: 30s
+      keepAliveTimeout: 10s
+    
+    # Report 서비스 (신규 - 동일 포트 사용)
+    report-service:
+      address: ${PLANIT_INSIGHT_AI_REPORT_GRPC_TARGET:${GRPC_REPORT_SERVICE_ADDRESS:static://planit-insight-ai-svc:9095}}
+      negotiationType: plaintext
+      enableKeepAlive: true
+      keepAliveTime: 30s
+      keepAliveTimeout: 10s
+
+    # User Service (카테고리 동기화용)
+    user-service:
+      address: ${PLANIT_USER_SERVICE_GRPC_TARGET:${USER_SERVICE_GRPC_ADDRESS:static://planit-user-svc:9091}}
+      negotiation-type: plaintext
+
+# AWS
+aws:
+  access-key-id: ${AWS_ACCESS_KEY_ID:}
+  secret-access-key: ${AWS_SECRET_ACCESS_KEY:}
+  dynamodb:
+    table-name: ${DYNAMODB_TABLE_NAME:ai_reports}
+    region: ${AWS_REGION:ap-northeast-2}
+    endpoint: ${DYNAMODB_ENDPOINT:}
+
+# ShedLock
+shedlock:
+  defaults:
+    lock-at-most-for: 1h
+    lock-at-least-for: 10m
+
+# Swagger
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+
+# /actuator/health 로 접속하면 서버 생존 여부 반환
+management:
+  endpoints:
+    web:
+      base-path: /api/v1/insight/actuator
+      exposure:
+        include: health, info, metrics
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+
+# CORS 설정 (Phase 2 JWT 대비)
+cors:
+  allowed-origins: ${PLANIT_CORS_ALLOWED_ORIGINS:${CORS_ALLOWED_ORIGINS:https://planit.example.com}}
+
+# JWT 설정 (Phase 2 JWT 인증)
+# ⚠️ 중요: User-svc와 동일한 JWT_SECRET 사용 필수
+jwt:
+  secret: ${JWT_SECRET:planit-user-service-secret-key-change-in-production-please}
+  access-token-validity: ${JWT_ACCESS_TOKEN_VALIDITY:900000}    # 15분 (밀리초)
+  refresh-token-validity: ${JWT_REFRESH_TOKEN_VALIDITY:604800000}  # 7일 (밀리초)
